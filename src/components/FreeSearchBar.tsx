@@ -1,58 +1,72 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { NominatimResult, searchPlaces } from '../services/nominatim';
+import { PARKING_LOCATIONS } from '../../src/data/parkingData';
+
+interface NominatimResult {
+    lat: string;
+    lon: string;
+    display_name: string;
+}
 
 interface Props {
     onPlaceSelect: (result: NominatimResult) => void;
     placeholder?: string;
 }
 
-export default function FreeSearchBar({ onPlaceSelect, placeholder = 'Search location...' }: Props) {
+export default function FreeSearchBar({ onPlaceSelect, placeholder = 'Search parking...' }: Props) {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<NominatimResult[]>([]);
+    const [results, setResults] = useState<any[]>([]);
     const [showResults, setShowResults] = useState(false);
-    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            if (query.length > 2) {
-                handleSearch();
-            } else {
-                setResults([]);
-                setShowResults(false);
-            }
-        }, 500);
+    // ✅ SEARCH IN PARKING DATA (Not Nominatim)
+    const handleSearch = (text: string) => {
+        setQuery(text);
 
-        return () => clearTimeout(timeoutId);
-    }, [query]);
-
-    const handleSearch = async () => {
-        setLoading(true);
-        try {
-            const searchResults = await searchPlaces(query);
-            setResults(searchResults);
-            setShowResults(searchResults.length > 0);
-        } catch (error) {
-            console.error('Search error:', error);
+        if (text.trim().length === 0) {
             setResults([]);
             setShowResults(false);
+            return;
         }
-        setLoading(false);
+
+        // ✅ Filter parking by name or city
+        const filteredParking = PARKING_LOCATIONS.filter(parking =>
+            parking.name.toLowerCase().includes(text.toLowerCase()) ||
+            parking.city.toLowerCase().includes(text.toLowerCase())
+        );
+
+        // ✅ Format results
+        const formattedResults = filteredParking.map(p => ({
+            lat: String(p.coords.latitude),
+            lon: String(p.coords.longitude),
+            display_name: `${p.name}, ${p.city}`,
+            place_id: p.id,
+            parking: p,
+        }));
+
+        setResults(formattedResults);
+        setShowResults(formattedResults.length > 0);
     };
 
-    const handleSelectPlace = (result: NominatimResult) => {
+    const handleSelectPlace = (result: any) => {
         setQuery(result.display_name);
         setShowResults(false);
-        onPlaceSelect(result);
+        onPlaceSelect({
+            lat: result.lat,
+            lon: result.lon,
+            display_name: result.display_name,
+        });
     };
 
-    const renderResult = ({ item }: { item: NominatimResult }) => (
+    const renderResult = ({ item }: { item: any }) => (
         <TouchableOpacity style={styles.resultItem} onPress={() => handleSelectPlace(item)}>
-            <Ionicons name="location-outline" size={20} color="#666" />
-            <Text style={styles.resultText} numberOfLines={2}>
-                {item.display_name}
-            </Text>
+            <Ionicons name="location-outline" size={20} color="#007AFF" />
+            <View style={styles.resultContent}>
+                <Text style={styles.resultTitle}>{item.parking.name}</Text>
+                <Text style={styles.resultSubtitle}>
+                    {item.parking.city} • {item.parking.price} • {item.parking.availability} spots
+                </Text>
+            </View>
         </TouchableOpacity>
     );
 
@@ -63,60 +77,105 @@ export default function FreeSearchBar({ onPlaceSelect, placeholder = 'Search loc
                 <TextInput
                     style={styles.searchInput}
                     value={query}
-                    onChangeText={setQuery}
+                    onChangeText={handleSearch}
                     placeholder={placeholder}
                     placeholderTextColor="#999"
                 />
-                {loading && <Ionicons name="refresh" size={20} color="#007AFF" />}
+                {query.length > 0 && (
+                    <TouchableOpacity onPress={() => { setQuery(''); setResults([]); setShowResults(false); }}>
+                        <Ionicons name="close-circle" size={20} color="#999" />
+                    </TouchableOpacity>
+                )}
             </View>
 
-            {showResults && (
+            {showResults && results.length > 0 && (
                 <FlatList
                     data={results}
                     renderItem={renderResult}
-                    keyExtractor={(item) => item.place_id.toString()}
+                    keyExtractor={(item) => item.place_id}
                     style={styles.resultsList}
+                    scrollEnabled={results.length > 3}
+                    nestedScrollEnabled={true}
                     showsVerticalScrollIndicator={false}
                 />
+            )}
+
+            {showResults && query.length > 0 && results.length === 0 && (
+                <View style={styles.noResults}>
+                    <Text style={styles.noResultsText}>No parking found</Text>
+                </View>
             )}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { zIndex: 1000 },
+    container: {
+        zIndex: 1000,
+        position: 'relative',
+    },
     searchInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: 'white',
-        borderRadius: 8,
+        borderRadius: 12,
         paddingHorizontal: 15,
         paddingVertical: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    searchIcon: { marginRight: 10 },
-    searchInput: { flex: 1, fontSize: 16 },
+    searchIcon: {
+        marginRight: 10
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: '#333',
+    },
     resultsList: {
         backgroundColor: 'white',
-        borderRadius: 8,
+        borderRadius: 12,
         marginTop: 5,
-        maxHeight: 200,
+        maxHeight: 250,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     resultItem: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#f0f0f0',
     },
-    resultText: { marginLeft: 10, flex: 1, fontSize: 14 },
+    resultContent: {
+        marginLeft: 10,
+        flex: 1,
+    },
+    resultTitle: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333',
+    },
+    resultSubtitle: {
+        fontSize: 12,
+        color: '#888',
+        marginTop: 2,
+    },
+    noResults: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        marginTop: 5,
+        padding: 16,
+        alignItems: 'center',
+    },
+    noResultsText: {
+        fontSize: 14,
+        color: '#999',
+    },
 });

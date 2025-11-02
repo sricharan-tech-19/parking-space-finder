@@ -22,6 +22,12 @@ export const PARKING_LOCATIONS: Parking[] = [
     { id: 'blr10', name: 'Banashankari Temple', coords: { latitude: 12.9250, longitude: 77.5667 }, availability: 7, price: '₹30/hr', hours: '6am - 10pm', city: 'Bangalore' },
     { id: 'blr11', name: 'Silk Board Junction', coords: { latitude: 12.9165, longitude: 77.6222 }, availability: 15, price: '₹25/hr', hours: '24 hours', city: 'Bangalore' },
     { id: 'blr12', name: 'JP Nagar Metro', coords: { latitude: 12.9089, longitude: 77.5850 }, availability: 11, price: '₹35/hr', hours: '6am - 11pm', city: 'Bangalore' },
+    { id: 'blr13', name: 'Phoenix Market City', coords: { latitude: 12.9711, longitude: 77.6412 }, availability: 32, price: '₹45/hr', hours: '24 hours', city: 'Bangalore' },
+    { id: 'blr14', name: 'Forum Mall Parking', coords: { latitude: 12.9762, longitude: 77.6446 }, availability: 28, price: '₹40/hr', hours: '24 hours', city: 'Bangalore' },
+    { id: 'blr15', name: 'Orion Mall', coords: { latitude: 12.9689, longitude: 77.7068 }, availability: 25, price: '₹35/hr', hours: '24 hours', city: 'Bangalore' },
+
+
+
 
     // Chennai locations (10 new ones)
     { id: 'che1', name: 'Ragtag Parking', coords: { latitude: 13.03581, longitude: 80.27015 }, availability: 15, price: '₹40/hr', hours: '24 hours', city: 'Chennai' },
@@ -34,6 +40,9 @@ export const PARKING_LOCATIONS: Parking[] = [
     { id: 'che8', name: 'Anna Nagar Tower Park', coords: { latitude: 13.0850, longitude: 80.2101 }, availability: 10, price: '₹35/hr', hours: '6am - 10pm', city: 'Chennai' },
     { id: 'che9', name: 'OMR IT Corridor', coords: { latitude: 12.9171, longitude: 80.2275 }, availability: 30, price: '₹25/hr', hours: '24 hours', city: 'Chennai' },
     { id: 'che10', name: 'Velachery Bus Terminus', coords: { latitude: 12.9854, longitude: 80.2180 }, availability: 18, price: '₹30/hr', hours: '5am - 12am', city: 'Chennai' },
+    { id: 'che12', name: 'Spencer Plaza', coords: { latitude: 13.0384, longitude: 80.2519 }, availability: 19, price: '₹35/hr', hours: '24 hours', city: 'Chennai' },
+    { id: 'che13', name: 'Pondy Bazaar', coords: { latitude: 13.0384, longitude: 80.2347 }, availability: 22, price: '₹30/hr', hours: '24 hours', city: 'Chennai' },
+
 ];
 
 // Helper function to get parking by city

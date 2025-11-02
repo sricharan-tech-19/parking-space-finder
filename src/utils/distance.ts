@@ -12,7 +12,7 @@ export function calculateDistance(
     lat2: number,
     lng2: number
 ): number {
-    const R = 6371; // Earth's radius in kilometers
+    const R = 6371; 
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLng = (lng2 - lng1) * (Math.PI / 180);
 
@@ -28,7 +28,7 @@ export function calculateDistance(
 }
 
 /**
- * Filter parking spots within a given radius
+
  * @param userLat User's latitude
  * @param userLng User's longitude
  * @param parkingSpots Array of parking spots

@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { Alert, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
+import { useFavorites } from '../../src/context/FavoritesContext';
 
 type Params = {
     id?: string;
@@ -18,6 +20,33 @@ export default function ParkingInfoScreen() {
     const params = useLocalSearchParams<Params>();
     const lat = params.lat ? Number(params.lat) : undefined;
     const lng = params.lng ? Number(params.lng) : undefined;
+
+    // ✅ Add Favorites Hook
+    const { isFavorite, addFavorite, removeFavorite } = useFavorites();
+    const parkingId = params.id as string;
+
+    // ✅ ADD STATE FOR HEART:
+    const [isLiked, setIsLiked] = useState(isFavorite(parkingId));
+
+    // ✅ ADD HEART HANDLER:
+    const handleHeartPress = async () => {
+        console.log('Heart pressed. ID:', parkingId, 'Currently Liked:', isLiked);
+
+        try {
+            if (isLiked) {
+                console.log('Removing from favorites:', parkingId);
+                await removeFavorite(parkingId);
+                setIsLiked(false);
+            } else {
+                console.log('Adding to favorites:', parkingId);
+                await addFavorite(parkingId);
+                setIsLiked(true);
+            }
+        } catch (error) {
+            console.error('Error updating favorite:', error);
+            Alert.alert('Error', 'Could not update favorite');
+        }
+    };
 
     const openExternalMaps = () => {
         if (!lat || !lng) return;
@@ -52,14 +81,11 @@ Shared via Parking Finder App 🆓`;
 
             if (result.action === Share.sharedAction) {
                 if (result.activityType) {
-                    // Shared via specific app
                     console.log('Shared via:', result.activityType);
                 } else {
-                    // Shared successfully
                     console.log('Shared successfully');
                 }
             } else if (result.action === Share.dismissedAction) {
-                // Share dialog was dismissed
                 console.log('Share dismissed');
             }
         } catch (error) {
@@ -75,7 +101,6 @@ Shared via Parking Finder App 🆓`;
         }
 
         try {
-            // For Expo, we can create a simple copy-like share
             const coordinates = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
             await Share.share({
                 message: `📍 ${params.name || 'Parking Location'} Coordinates: ${coordinates}`,
@@ -88,9 +113,9 @@ Shared via Parking Finder App 🆓`;
 
     const getAvailabilityColor = (availability: string) => {
         const num = parseInt(availability || '0');
-        if (num > 15) return '#4CAF50'; // Green
-        if (num > 8) return '#FF9800'; // Orange
-        return '#F44336'; // Red
+        if (num > 15) return '#4CAF50';
+        if (num > 8) return '#FF9800';
+        return '#F44336';
     };
 
     const getAvailabilityStatus = (availability: string) => {
@@ -120,15 +145,24 @@ Shared via Parking Finder App 🆓`;
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             <View style={styles.header}>
-                <View style={styles.headerIcon}>
-                    <Ionicons name="car" size={40} color="#007AFF" />
+                <View style={styles.headerTop}>
+                    <View style={styles.headerIcon}>
+                        <Ionicons name="car" size={40} color="#007AFF" />
+                    </View>
+                    <Pressable
+                        onPress={handleHeartPress}
+                        style={styles.heartButton}
+                    >
+                        <Text style={styles.heartIcon}>
+                            {isLiked ? '❤️' : '🤍'}
+                        </Text>
+                    </Pressable>
                 </View>
                 <Text style={styles.title}>{params.name || 'Parking Details'}</Text>
                 <Text style={styles.subtitle}>Parking Information</Text>
             </View>
 
             <View style={styles.infoGrid}>
-                {/* Availability Card */}
                 <View style={[styles.infoCard, styles.availabilityCard]}>
                     <View style={styles.cardHeader}>
                         <Ionicons name="car-sport" size={28} color={getAvailabilityColor(params.availability || '0')} />
@@ -145,7 +179,6 @@ Shared via Parking Finder App 🆓`;
                     </View>
                 </View>
 
-                {/* Price Card */}
                 <View style={styles.infoCard}>
                     <View style={styles.cardHeader}>
                         <Ionicons name="cash" size={24} color="#4CAF50" />
@@ -155,7 +188,6 @@ Shared via Parking Finder App 🆓`;
                     <Text style={styles.cardSubtext}>per hour</Text>
                 </View>
 
-                {/* Hours Card */}
                 <View style={styles.infoCard}>
                     <View style={styles.cardHeader}>
                         <Ionicons name="time" size={24} color="#FF9800" />
@@ -165,7 +197,6 @@ Shared via Parking Finder App 🆓`;
                     <Text style={styles.cardSubtext}>operating hours</Text>
                 </View>
 
-                {/* City Card */}
                 {params.city && (
                     <View style={styles.infoCard}>
                         <View style={styles.cardHeader}>
@@ -179,7 +210,6 @@ Shared via Parking Finder App 🆓`;
                     </View>
                 )}
 
-                {/* Distance Card */}
                 {params.distance && (
                     <View style={styles.infoCard}>
                         <View style={styles.cardHeader}>
@@ -191,7 +221,6 @@ Shared via Parking Finder App 🆓`;
                     </View>
                 )}
 
-                {/* Coordinates Card - Make it pressable */}
                 {lat && lng && (
                     <Pressable
                         style={[styles.infoCard, styles.coordinatesCard]}
@@ -209,7 +238,6 @@ Shared via Parking Finder App 🆓`;
                 )}
             </View>
 
-            {/* Action Buttons */}
             <View style={styles.buttonContainer}>
                 <Pressable onPress={openExternalMaps} style={styles.navigateButton}>
                     <Ionicons name="navigate" size={20} color="white" />
@@ -222,7 +250,6 @@ Shared via Parking Finder App 🆓`;
                 </Pressable>
             </View>
 
-            {/* Quick Actions */}
             <View style={styles.quickActions}>
                 <Text style={styles.quickActionsTitle}>Quick Actions</Text>
                 <View style={styles.quickButtonsRow}>
@@ -247,7 +274,6 @@ Shared via Parking Finder App 🆓`;
                 </View>
             </View>
 
-            {/* Additional Info */}
             <View style={styles.additionalInfo}>
                 <Text style={styles.additionalTitle}>Additional Information</Text>
                 <View style={styles.infoRow}>
@@ -291,6 +317,25 @@ const styles = StyleSheet.create({
         elevation: 3,
         marginBottom: 20,
     },
+    headerTop: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: 10,
+    },
+    heartButton: {
+        padding: 12,
+        backgroundColor: '#fff',
+        borderRadius: 25,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    heartIcon: {
+        fontSize: 32,
+    },
     headerIcon: {
         width: 80,
         height: 80,
@@ -298,7 +343,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f8ff',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 10,
     },
     title: {
         fontSize: 24,

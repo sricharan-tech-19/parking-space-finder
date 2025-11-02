@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
+
 export default function TabLayout() {
   return (
     <Tabs
@@ -16,6 +17,16 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" color={color} size={size} />,
         }}
       />
+
+      {/* ✅ NEW: Favorites Tab */}
+      <Tabs.Screen
+        name="favorites"
+        options={{
+          title: 'Favorites',
+          tabBarIcon: ({ color, size }) => <Ionicons name="heart" color={color} size={size} />,
+        }}
+      />
+
       <Tabs.Screen
         name="parking-info"
         options={{
