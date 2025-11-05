@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-const API_URL = 'http://10.13.57.225:5000/api';  // Android emulator
+const API_URL = 'https://parking-space-finder-backend.onrender.com/api';  // Cloud backend
 const api = axios.create({
     baseURL: API_URL,
     timeout: 10000,
