@@ -2,7 +2,7 @@
   "expo": {
     "name": "Parking Finder",
     "slug": "parking-finder",
-    "icon": "./assets/images/generated-image.png",
+    "icon": "./assets/images/logo.png",
     "plugins": [
       [
         "expo-location",
